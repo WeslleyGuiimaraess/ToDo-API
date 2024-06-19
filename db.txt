@@ -1,0 +1,6 @@
+1,Lavar banheiro,False
+2,Lavar louça,False
+3,Ir ao mercado,False
+4,Estudar,True
+5, 'Tarefa semana 1', False
+(6, 'teste de inserção', True)(0, 'string', True)
