@@ -80,7 +80,7 @@ def update(item_id: int, item:Item):
             else:
                 f.write(f"{item.identificador},{item.descricao},{item.status}\n")
 
-    return item.dict()
+    return item.model_dump()
 
 @app.delete("/item/{item_id}")
 def remove_tarefa(item_id: int):
