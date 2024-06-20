@@ -67,13 +67,21 @@ def get_one(item_id: int):
     return {"erro" : "Mensagem de erro!"}
 
 
-@app.put("/item")
-def nova_tarefa(item:Item):
+@app.put("/item/{item_id}")
+def update(item_id: int, item:Item):
+    with open('db.txt', 'r') as f:
+        dados = f.readlines()
 
-        with open('db.txt', 'a') as f:
-            f.write(f"{item.identificador, item.descricao, item.status}\n")
-        
-        return list()
+    with open('db.txt', 'w') as f:
+        for line in dados:
+            campos_separados = line.split(',')
+            if int(campos_separados[0]) != item_id:
+                f.write(line)
+            else:
+                f.write(f"{item.identificador},{item.descricao},{item.status}\n")
+
+    return item.dict()
+
 
 @app.put("/item")
 def remove_tarefa(item:Item, item_id: int):
