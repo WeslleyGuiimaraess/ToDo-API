@@ -32,27 +32,26 @@ class Item(BaseModel):
 
 @app.post("/item")
 def create(item: Item):
+    conn = sql.connect('tarefas.db')
+    cursor = conn.cursor()
 
-    #with open('db.txt', 'r') as f:
-    #   dados = f.readlines()
-    #   for line in dados:
-    #        campos_separados = line.split(',')
-    #        if int(campos_separados[0]) == int(item.identificador):
-    #            return {"erro" : "Mensagem de erro!"}
-
-    #with open('db.txt', 'a') as f:
-    #    f.write(f"{item.identificador},{item.descricao},{item.status}\n")
-
-    #return {"id": item.identificador, "descricao": item.descricao, "status": item.status}
-
-    cursor.execute("""
-    INSERT INTO tarefas ( tarefa, status)
-    VALUES( ?, ?)
-    """, item.descricao, item.status)
+    try:
+        cursor.execute(
+            f"""
+            INSERT INTO tarefas (id, tarefa, status)
+            VALUES (
+                '{item.identificador}',
+                '{item.descricao}',
+                '{item.status}'
+            )"""
+        )
+    except Exception as e:
+        return {'erro': str(e)}
 
     conn.commit()
-    print("Dados inseridos com sucesso.")
-    return print("Sucess")
+    conn.close()
+
+    return {"id": item.identificador, "descricao": item.descricao, "status": item.status}
 
 
 @app.get("/item")
@@ -75,7 +74,7 @@ def list():
     cursor.execute("""
     SELECT * FROM tarefas
                    """)
-    
+
     for linha in cursor.fetchall():
         print(linha)
     return print("Sucess")
@@ -148,7 +147,3 @@ def remove_tarefa(item_id: int, item:Item):
     DELETE FROM tarefas
     WHERE id = ?
     """, item.identificador)
-    
-    
-
-
