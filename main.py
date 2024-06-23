@@ -4,15 +4,9 @@ from pydantic import BaseModel
 import sqlite3 as sql
 
 
-
-#if not os.path.exists('db.txt'):
-#    f = open('db.txt', 'w')
-#    f.close()
-
-conn = sql.connect('tarefas.db')
-cursor = conn.cursor()
-
 if not os.path.exists('tarefas.db'):
+    conn = sql.connect('tarefas.db')
+    cursor = conn.cursor()
     cursor.execute("""
     CREATE TABLE tarefas(
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -20,7 +14,12 @@ if not os.path.exists('tarefas.db'):
             status BOOL NOT NULL
         );
     """)
-    print("Tabela criada com sucesso.")
+    conn.close()
+
+    print("Banco inicializado com sucesso.")
+
+conn = sql.connect('tarefas.db')
+cursor = conn.cursor()
 
 app = FastAPI()
 
@@ -75,7 +74,6 @@ def list():
     cursor.execute("""
     SELECT * FROM tarefas
                    """)
-    
     for linha in cursor.fetchall():
         print(linha)
     return print("Sucess")
@@ -148,7 +146,3 @@ def remove_tarefa(item_id: int, item:Item):
     DELETE FROM tarefas
     WHERE id = ?
     """, item.identificador)
-    
-    
-
-
