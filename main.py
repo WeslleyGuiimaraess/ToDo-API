@@ -76,12 +76,14 @@ def get_one(item_id: int):
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
 
-    busca = cursor.execute(f"""
-    SELECT * FROM tarefas WHERE id= '{item_id}'
-    """)
+    cursor.execute(f"""
+    SELECT * FROM tarefas WHERE id = '{item_id}'
+                   """)
+
+    resultado = dict(zip(('identificador', 'descricao', 'status'), cursor.fetchone()))
     
     conn.close()
-    return busca
+    return resultado
 
 
 @app.put("/item/{item_id}")
@@ -90,7 +92,7 @@ def update(item_id: int, item:Item):
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
   
-    cursor.execute("""
+    cursor.execute(f"""
     UPDATE tarefas
     SET tarefa = '{item.descricao}', status = '{item.status}'
     WHERE id = '{item.identificador}'
@@ -98,18 +100,18 @@ def update(item_id: int, item:Item):
 
     conn.commit()
     conn.close()
-    return print("dados autializados com sucesso")
+
 
 @app.delete("/item/{item_id}")
-def remove_tarefa(item_id: int, item:Item):
+def remove_tarefa(item_id: int):
 
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
 
-    cursor.execute("""
-    DELETE FROM tarefas
-    WHERE id = '{item.identificador}'
+    cursor.execute(f"""
+    DELETE FROM tarefas WHERE id = '{item_id}'
     """)
+    conn.commit()
     conn.close()
     return print("Deletado com sucesso")
     
