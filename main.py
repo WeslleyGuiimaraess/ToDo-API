@@ -19,9 +19,6 @@ if not os.path.exists('tarefas.db'):
 
     print("Banco inicializado com sucesso.")
 
-conn = sql.connect('tarefas.db')
-cursor = conn.cursor()
-
 app = FastAPI()
 
 
@@ -33,6 +30,8 @@ class Item(BaseModel):
 
 @app.post("/item")
 def create(item: Item):
+    conn = sql.connect('tarefas.db')
+    cursor = conn.cursor()
 
     try:
         cursor.execute(
@@ -62,22 +61,23 @@ def list():
     SELECT * FROM tarefas;
                    """)
     
-    for linha in cursor.fetchall():
-        print(linha)
-
+    
+    resultado = [dict(zip(('identificador', 'descricao', 'status'), row)) for row in cursor.fetchall()]
     conn.close()
-    return print("Sucess")
+
+    return resultado
+
 
 
 
 @app.get("/item/{item_id}")
-def get_one(item_id: int, item:Item):
+def get_one(item_id: int):
 
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
 
-    busca = cursor.execute("""
-    SELECT FROM tarefas WHERE id= '{item.identificador}'
+    busca = cursor.execute(f"""
+    SELECT * FROM tarefas WHERE id= '{item_id}'
     """)
     
     conn.close()
