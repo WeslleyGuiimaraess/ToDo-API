@@ -4,15 +4,9 @@ from pydantic import BaseModel
 import sqlite3 as sql
 
 
-
-#if not os.path.exists('db.txt'):
-#    f = open('db.txt', 'w')
-#    f.close()
-
-conn = sql.connect('tarefas.db')
-cursor = conn.cursor()
-
 if not os.path.exists('tarefas.db'):
+    conn = sql.connect('tarefas.db')
+    cursor = conn.cursor()
     cursor.execute("""
     CREATE TABLE tarefas(
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -20,9 +14,16 @@ if not os.path.exists('tarefas.db'):
             status BOOL NOT NULL
         );
     """)
-    print("Tabela criada com sucesso.")
+
+    conn.close()
+
+    print("Banco inicializado com sucesso.")
+
+conn = sql.connect('tarefas.db')
+cursor = conn.cursor()
 
 app = FastAPI()
+
 
 class Item(BaseModel):
     identificador: int
@@ -33,96 +34,57 @@ class Item(BaseModel):
 @app.post("/item")
 def create(item: Item):
 
-    #with open('db.txt', 'r') as f:
-    #   dados = f.readlines()
-    #   for line in dados:
-    #        campos_separados = line.split(',')
-    #        if int(campos_separados[0]) == int(item.identificador):
-    #            return {"erro" : "Mensagem de erro!"}
 
-    #with open('db.txt', 'a') as f:
-    #    f.write(f"{item.identificador},{item.descricao},{item.status}\n")
-
-    #return {"id": item.identificador, "descricao": item.descricao, "status": item.status}
-
-    cursor.execute("""
-    INSERT INTO tarefas ( tarefa, status)
-    VALUES( ?, ?)
-    """, item.descricao, item.status)
-
+    try:
+        cursor.execute(
+            f"""
+            INSERT INTO tarefas (id, tarefa, status)
+            VALUES (
+                '{item.identificador}',
+                '{item.descricao}',
+                '{item.status}'
+            )"""
+        )
+    except Exception as e:
+        return {'erro': str(e)}
+    
     conn.commit()
-    print("Dados inseridos com sucesso.")
-    return print("Sucess")
+    conn.close()
 
+    return {"id": item.identificador, "descricao": item.descricao, "status": item.status}
 
 @app.get("/item")
 def list():
 
-   # with open('db.txt', 'r') as f:
-    #    dados = f.readlines()
-
-    #    dados_em_lista = []
-    #    for line in dados:
-    #        campos_separados = line.split(',')
-    #        dados_em_lista.append({
-    #            "identificador":    str(campos_separados[0]),
-    #            "descricao":        str(campos_separados[1]),
-    #            "status":           str(campos_separados[2])
-    #        })
-
-    #    return dados_em_lista
-
     cursor.execute("""
-    SELECT * FROM tarefas
+    SELECT * FROM tarefas;
                    """)
     
     for linha in cursor.fetchall():
         print(linha)
+
     return print("Sucess")
+
 
 
 @app.get("/item/{item_id}")
 def get_one(item_id: int, item:Item):
 
-    #with open('db.txt', 'r') as f:
-    #    dados = f.readlines()
-
-    #    for line in dados:
-    #        campos_separados = line.split(',')
-    #        if int(campos_separados[0]) == item_id:
-    #            return {
-    #                    "identificador":    campos_separados[0],
-    #                    "descricao":        campos_separados[1],
-    #                    "status":           campos_separados[2]
-    #            }
-
-    #return {"erro" : "Mensagem de erro!"}
-
     busca = cursor.execute("""
-    SELECT FROM tarefas WHERE id=?
-    """, item.identificador)
+    SELECT FROM tarefas WHERE id= '{item.identificador}'
+    """)
+    
     return busca
 
 
 @app.put("/item/{item_id}")
 def update(item_id: int, item:Item):
-    #with open('db.txt', 'r') as f:
-    #    dados = f.readlines()
-
-    #with open('db.txt', 'w') as f:
-    #    for line in dados:
-    #        campos_separados = line.split(',')
-    #        if int(campos_separados[0]) != item_id:
-    #           f.write(line)
-    #        else:
-    #            f.write(f"{item.identificador},{item.descricao},{item.status}\n")
-
-    #return item.model_dump()
+  
     cursor.execute("""
     UPDATE tarefas
-    SET tarefa = ?, status = ?
-    WHERE id = ?
-    """, item.descricao, item.status, item.identificador)
+    SET tarefa = '{item.descricao}', status = '{item.status}'
+    WHERE id = '{item.identificador}'
+    """)
 
     conn.commit()
     return print("dados autializados com sucesso")
@@ -146,8 +108,9 @@ def remove_tarefa(item_id: int, item:Item):
 
     cursor.execute("""
     DELETE FROM tarefas
-    WHERE id = ?
-    """, item.identificador)
+    WHERE id = '{item.identificador}'
+    """)
+    return print("Deletado com sucesso")
     
     
 
