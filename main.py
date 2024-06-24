@@ -34,7 +34,6 @@ class Item(BaseModel):
 @app.post("/item")
 def create(item: Item):
 
-
     try:
         cursor.execute(
             f"""
@@ -56,6 +55,9 @@ def create(item: Item):
 @app.get("/item")
 def list():
 
+    conn = sql.connect('tarefas.db')
+    cursor = conn.cursor()
+
     cursor.execute("""
     SELECT * FROM tarefas;
                    """)
@@ -63,6 +65,7 @@ def list():
     for linha in cursor.fetchall():
         print(linha)
 
+    conn.close()
     return print("Sucess")
 
 
@@ -70,15 +73,22 @@ def list():
 @app.get("/item/{item_id}")
 def get_one(item_id: int, item:Item):
 
+    conn = sql.connect('tarefas.db')
+    cursor = conn.cursor()
+
     busca = cursor.execute("""
     SELECT FROM tarefas WHERE id= '{item.identificador}'
     """)
     
+    conn.close()
     return busca
 
 
 @app.put("/item/{item_id}")
 def update(item_id: int, item:Item):
+
+    conn = sql.connect('tarefas.db')
+    cursor = conn.cursor()
   
     cursor.execute("""
     UPDATE tarefas
@@ -87,29 +97,20 @@ def update(item_id: int, item:Item):
     """)
 
     conn.commit()
+    conn.close()
     return print("dados autializados com sucesso")
 
 @app.delete("/item/{item_id}")
 def remove_tarefa(item_id: int, item:Item):
 
-    #with open('db.txt', 'r') as f:
-    #    dados = f.readlines()
-
-    #with open('db.txt', 'w') as f:
-
-    #    msg = {'erro' : 'Item não encontrado'}
-    #    for line in dados:
-    #        campos_separados = line.split(',')
-    #        if int(campos_separados[0]) != item_id:
-    #            f.write(line)
-    #        else:
-    #            msg = {'sucesso' : 'Item deletado com sucesso!'}
-    #return msg
+    conn = sql.connect('tarefas.db')
+    cursor = conn.cursor()
 
     cursor.execute("""
     DELETE FROM tarefas
     WHERE id = '{item.identificador}'
     """)
+    conn.close()
     return print("Deletado com sucesso")
     
     
