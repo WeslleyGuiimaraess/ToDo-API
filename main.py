@@ -122,18 +122,31 @@ def remove_tarefa(item_id: int):
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
 
+
     try:
-        cursor.execute(f"""
-        DELETE FROM tarefas WHERE id = '{item_id}'
-        """)
-    
+         cursor.execute(f"""
+            SELECT * FROM tarefas WHERE id = {item_id}   
+            """)
+         
+         resultado = dict(zip(('identificador', 'descricao', 'status'), cursor.fetchone()))
+
+         if(resultado):
+             
+             cursor.execute(f"""
+                    DELETE FROM tarefas WHERE id = {item_id}
+                            """)
+             conn.commit()
+             conn.close()
+             return{'sucess': str('Tarefa apagada com sucesso')}
+            
     except Exception as e:
 
         return {'erro': str('ID inválido')}
     
-    conn.commit()
-    conn.close()
-    return print("Deletado com sucesso")
+
+    
+    
+    
     
     
 
