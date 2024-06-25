@@ -57,9 +57,14 @@ def list():
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
 
-    cursor.execute("""
-    SELECT * FROM tarefas;
+    try:
+        cursor.execute("""
+        SELECT * FROM tarefas;
                    """)
+        
+    except Exception as e:
+
+        return {'erro': str('Banco de dados vazio')}
     
     
     resultado = [dict(zip(('identificador', 'descricao', 'status'), row)) for row in cursor.fetchall()]
@@ -76,14 +81,19 @@ def get_one(item_id: int):
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
 
-    cursor.execute(f"""
-    SELECT * FROM tarefas WHERE id = '{item_id}'
+    try:
+        cursor.execute(f"""
+        SELECT * FROM tarefas WHERE id = '{item_id}'
                    """)
 
-    resultado = dict(zip(('identificador', 'descricao', 'status'), cursor.fetchone()))
+        resultado = dict(zip(('identificador', 'descricao', 'status'), cursor.fetchone()))
     
-    conn.close()
-    return resultado
+        conn.close()
+        return resultado
+    
+    except Exception as e:
+
+        return {'erro': str('ID inválido')}
 
 
 @app.put("/item/{item_id}")
@@ -92,11 +102,15 @@ def update(item_id: int, item:Item):
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
   
-    cursor.execute(f"""
-    UPDATE tarefas
-    SET tarefa = '{item.descricao}', status = '{item.status}'
-    WHERE id = '{item.identificador}'
-    """)
+    try:
+        cursor.execute(f"""
+        UPDATE tarefas
+        SET tarefa = '{item.descricao}', status = '{item.status}'
+        WHERE id = '{item.identificador}'
+        """)
+    except Exception as e:
+
+        return {'erro': str('Erro ao atualizar, verifique se os campos estão corretos')}
 
     conn.commit()
     conn.close()
@@ -108,9 +122,15 @@ def remove_tarefa(item_id: int):
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
 
-    cursor.execute(f"""
-    DELETE FROM tarefas WHERE id = '{item_id}'
-    """)
+    try:
+        cursor.execute(f"""
+        DELETE FROM tarefas WHERE id = '{item_id}'
+        """)
+    
+    except Exception as e:
+
+        return {'erro': str('ID inválido')}
+    
     conn.commit()
     conn.close()
     return print("Deletado com sucesso")
