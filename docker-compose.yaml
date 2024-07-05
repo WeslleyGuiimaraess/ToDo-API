@@ -4,7 +4,7 @@ services:
   app:
     restart: unless-stopped
     build: .
-    container_name: fastapi-sqlite3
+    container_name: ToDO-API
     ports:
       - "8000:8000"
     volumes:
