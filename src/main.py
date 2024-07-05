@@ -29,7 +29,7 @@ class Item(BaseModel):
 
 
 @app.post("/item")
-def create(item: Item):
+def create(item: Item) -> Item:
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
 
@@ -49,10 +49,10 @@ def create(item: Item):
     conn.commit()
     conn.close()
 
-    return {"id": item.identificador, "descricao": item.descricao, "status": item.status}
+    return item
 
 @app.get("/item")
-def list():
+def list() -> list[Item]:
 
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()
@@ -76,7 +76,7 @@ def list():
 
 
 @app.get("/item/{item_id}")
-def get_one(item_id: int):
+def get_one(item_id: int) -> Item:
 
     conn = sql.connect('tarefas.db')
     cursor = conn.cursor()

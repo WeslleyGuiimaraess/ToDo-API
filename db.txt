@@ -1,4 +1,0 @@
-1,Tarefa semana 1,False
-4,Estudar,True
-2,Lavar cozinha,False
-3,entregar tarefa,True
