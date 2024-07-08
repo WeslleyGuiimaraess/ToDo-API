@@ -1,3 +1,2 @@
 fastapi
 uvicorn #executor assicrono de servidor em python
-sqlite3 #SQLite
