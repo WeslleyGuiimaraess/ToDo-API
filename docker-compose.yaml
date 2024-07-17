@@ -11,8 +11,6 @@ services:
       interval: 2s  
       timeout: 5s
       retries: 50
-    volumes:
-      - ./src/:/app/src
 
   app:
 
