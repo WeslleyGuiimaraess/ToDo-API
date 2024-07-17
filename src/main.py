@@ -1,23 +1,36 @@
 import os
 from fastapi import FastAPI
 from pydantic import BaseModel
-import sqlite3 as sql
+import psycopg2
 
 
-if not os.path.exists('tarefas.db'):
-    conn = sql.connect('tarefas.db')
-    cursor = conn.cursor()
-    cursor.execute("""
-    CREATE TABLE tarefas(
-            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-            tarefa varchar[25] NOT NULL,
-            status BOOL NOT NULL
-        );
-    """)
-
-    conn.close()
-
-    print("Banco inicializado com sucesso.")
+if not os.path.exists('tarefas.localhost'):
+    try:
+        # Conectar ao banco de dados
+        with psycopg2.connect(
+            dbname="tarefas",
+            user="postgres",  # Substitua pelo usuário do seu banco de dados
+            password="password",  # Substitua pela senha do seu banco de dados
+            host="localhost",
+            port="5432"
+        ) as conn:
+            with conn.cursor() as cursor:
+                # Executar o comando de criação da tabela
+                cursor.execute("""
+                    CREATE TABLE tarefas (
+                        id INTEGER NOT NULL PRIMARY KEY,
+                        tarefa VARCHAR(255) NOT NULL,
+                        status BOOLEAN NOT NULL
+                    );
+                """)
+            
+            # Confirmar as mudanças no banco de dados
+            conn.commit()
+        
+        print("Banco inicializado com sucesso.")
+    
+    except psycopg2.Error as e:
+        print(f"Erro ao inicializar banco de dados: {e}")
 
 app = FastAPI()
 
@@ -30,18 +43,16 @@ class Item(BaseModel):
 
 @app.post("/item")
 def create(item: Item) -> Item:
-    conn = sql.connect('tarefas.db')
+    conn = psycopg2('postgres://postgres:password@localhost:5432/tarefas')
     cursor = conn.cursor()
 
     try:
         cursor.execute(
-            f"""
+            """
             INSERT INTO tarefas (id, tarefa, status)
             VALUES (
-                '{item.identificador}',
-                '{item.descricao}',
-                '{item.status}'
-            )"""
+                $1, $2, $3
+            );""", (item.identificador, item.descricao, item.status)
         )
     except Exception as e:
         return {'erro': str(e)}
@@ -54,7 +65,7 @@ def create(item: Item) -> Item:
 @app.get("/item")
 def list() -> list[Item]:
 
-    conn = sql.connect('tarefas.db')
+    conn = psycopg2('postgres://postgres:password@localhost:5432/tarefas')
     cursor = conn.cursor()
 
     try:
@@ -78,13 +89,13 @@ def list() -> list[Item]:
 @app.get("/item/{item_id}")
 def get_one(item_id: int) -> Item:
 
-    conn = sql.connect('tarefas.db')
+    conn = psycopg2('postgres://postgres:password@localhost:5432/tarefas')
     cursor = conn.cursor()
 
     try:
-        cursor.execute(f"""
-        SELECT * FROM tarefas WHERE id = '{item_id}'
-                   """)
+        cursor.execute("""
+        SELECT * FROM tarefas WHERE id = $1
+                   """), (item_id)
 
         resultado = dict(zip(('identificador', 'descricao', 'status'), cursor.fetchone()))
     
@@ -99,15 +110,15 @@ def get_one(item_id: int) -> Item:
 @app.put("/item/{item_id}")
 def update(item_id: int, item:Item):
 
-    conn = sql.connect('tarefas.db')
+    conn = psycopg2('postgres://postgres:password@localhost:5432/tarefas')
     cursor = conn.cursor()
   
     try:
-        cursor.execute(f"""
+        cursor.execute("""
         UPDATE tarefas
-        SET tarefa = '{item.descricao}', status = '{item.status}'
-        WHERE id = '{item.identificador}'
-        """)
+        SET tarefa = $1, status = $2
+        WHERE id = $3
+        """), (item.descricao, item.status, item.identificador)
     except Exception as e:
 
         return {'erro': str('Erro ao atualizar, verifique se os campos estão corretos')}
@@ -119,22 +130,22 @@ def update(item_id: int, item:Item):
 @app.delete("/item/{item_id}")
 def remove_tarefa(item_id: int):
 
-    conn = sql.connect('tarefas.db')
+    conn = psycopg2('postgres://psycopg2:password@localhost:5432/tarefas')
     cursor = conn.cursor()
 
 
     try:
-         cursor.execute(f"""
-            SELECT * FROM tarefas WHERE id = {item_id}   
-            """)
+         cursor.execute("""
+            SELECT * FROM tarefas WHERE id = $1  
+            """), (item_id)
          
          resultado = dict(zip(('identificador', 'descricao', 'status'), cursor.fetchone()))
 
          if(resultado):
              
-             cursor.execute(f"""
-                    DELETE FROM tarefas WHERE id = {item_id}
-                            """)
+             cursor.execute("""
+                    DELETE FROM tarefas WHERE id = $1
+                            """), (item_id)
              conn.commit()
              conn.close()
              return{'sucess': str('Tarefa apagada com sucesso')}

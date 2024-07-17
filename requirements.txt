@@ -1,2 +1,4 @@
 fastapi
 uvicorn #executor assicrono de servidor em python
+pydantic
+psycopg2-binary
