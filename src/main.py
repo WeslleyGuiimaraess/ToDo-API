@@ -16,16 +16,14 @@ try:
                     status BOOLEAN NOT NULL
                 );
             """)
-
-        print("Banco inicializado com sucesso.")
+        
         # Confirmar as mudanças no banco de dados
         conn.commit()
     
     print("Banco inicializado com sucesso.")
 
-except psycopg2 as e:
-
-        print(f"Erro ao inicializar banco de dados: {e}")
+except psycopg2.Error as e:
+    print(f"Erro ao inicializar banco de dados: {e}")
 
 app = FastAPI()
 
